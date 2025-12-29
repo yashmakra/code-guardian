@@ -3,8 +3,8 @@ import requests
 from rich import print
 from rich.table import Table
 
-from backend.core.scanner import PackageScanner
-from backend.api.parser import extract_commands
+from core.scanner import PackageScanner
+from api.parser import extract_packages
 
 app = typer.Typer(help="🛡️ Code Guardian – Package Security Scanner")
 
@@ -64,7 +64,7 @@ def scan_readme(github_url: str):
         print("❌ [red]README.md not found in main branch[/red]")
         raise typer.Exit(code=1)
 
-    packages = extract_commands(response.text)
+    packages = extract_packages(response.text)
     print(f"🔍 Found [bold]{len(packages)}[/bold] packages\n")
 
     table = Table(title="Dependency Scan")
