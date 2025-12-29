@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import requests
-from .parser import extract_commands
+from .parser import extract_packages
 from backend.core.scanner import PackageScanner
 
 router = APIRouter()
