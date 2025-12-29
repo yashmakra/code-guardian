@@ -1,73 +1,131 @@
-# Welcome to your Lovable project
+# 🛡️ SENTINEL
+### AI-Powered Supply Chain Security Auditor
 
-## Project info
+![License](https://img.shields.io/badge/License-MIT-green.svg) ![Status](https://img.shields.io/badge/Status-Prototype-blue) ![Tech Stack](https://img.shields.io/badge/Stack-FastAPI%20%7C%20React%20%7C%20RapidFuzz-orange)
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+> **"Protecting developers from the silent threat of AI-hallucinated packages."**
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚨 The Problem: AI Package Hallucinations
+Large Language Models (LLMs) like ChatGPT and Claude are revolutionizing coding, but they come with a dangerous side effect: **Package Hallucination**.
 
-**Use Lovable**
+* **The Threat:** LLMs often suggest library imports that *sound* real but do not exist (e.g., `huggingface-cli-v2` instead of `huggingface-hub`).
+* **The Attack Vector:** Malicious actors can scan widely generated AI code, identify these "fake" names, and register them on PyPI or NPM.
+* **The Consequence:** When a developer copy-pastes the AI's code and runs `pip install`, they unknowingly download malware instead of a helper library.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 💡 The Solution: Sentinel
+**Sentinel** is a real-time security auditor that acts as a firewall between AI-generated code and your development environment. It scans GitHub repositories and analyzes dependencies to detect:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Hallucinations:** Packages that are imported but do not exist in official registries.
+2. **Typosquatting:** Packages with names dangerously similar to popular libraries (e.g., `reqests` vs `requests`).
+3. **Abandonment:** Libraries that haven't been updated in years and pose security risks.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## ⚙️ How It Works (The Algorithm)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Our engine utilizes a multi-layered approach to verify package integrity:
 
-Follow these steps:
+### 1. Registry Verification Protocol
+We cross-reference every dependency found in `requirements.txt`, `package.json`, and `README.md` against the live **PyPI (Python)** and **NPM (Node.js)** APIs. If a package returns a 404, it is flagged as a potential **Critical Risk (Hallucination)**.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 2. Levenshtein Distance & RapidFuzz
+To detect **Typosquatting**, we use the `rapidfuzz` library to calculate the Levenshtein Distance (string similarity ratio) between the scanned package and a whitelist of the top 5,000 most popular open-source packages.
+* *Threshold:* If similarity is >90% but not an exact match, it is flagged as **High Risk**.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. File Parser Engine
+Our custom RegEx parser intelligently scans codebases for:
+* Python: `pip install`, `import`, and `requirements.txt` syntax.
+* Node.js: `npm install`, `package.json`, and `import` statements.
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## 🚀 Key Features
+
+* **✅ Cross-Ecosystem Support:** Seamlessly checks both Python (PyPI) and Node.js (NPM) ecosystems.
+* **⚡ Real-Time Scanning:** Scans an entire GitHub repository in seconds.
+* **🛡️ "Red Alert" UI:** Instantly visualizes Critical vs. Safe dependencies.
+* **🧠 Context-Aware Parsing:** Ignores built-in modules (like `os`, `sys`, `fs`) to reduce false positives.
+
+---
+
+## 🛠️ Installation & Setup
+
+Follow these steps to run Sentinel locally for testing.
+
+### Prerequisites
+* Python 3.10+
+* Node.js & npm
+* Git
+
+### 1. Clone the Repository
+
+```Bash
+git clone https://github.com/yashmakra/code-guardian.git
+cd code-guardian
+```
+### 2. Setup Backend (FastAPI)
+
+# Navigate to backend
+```Bash
+cd backend
+```
+
+# Create virtual environment (Windows)
+```Bash
+py -3.11 -m venv venv
+.\venv\Scripts\activate
+```
+
+# Install dependencies
+```Bash
+pip install -r requirements.txt
+```
+
+# Start the Server
+```Bash
+uvicorn main:app --reload
+```
+
+### 3. Setup Frontend (React)
+
+Open a new terminal:
+# Navigate to project root
+```Bash
+cd frontend
+npm install
+```
+
+# Start the UI
+```Bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit http://localhost:8080 to access the dashboard.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📊 Research & Methodology
+We believe that security tools must be transparent. Our detection logic is based on the research by **Bar Lanyado** regarding "AI Package Hallucinations" and the rise of software supply chain attacks.
 
-**Use GitHub Codespaces**
+> *For a deep dive into our research on Levenshtein Distance thresholds and false-positive reduction, please see our [Research Documentation](./research/algorithm_logic.md).*
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🔮 Future Roadmap
+* **IDE Extension:** A VS Code plugin to warn developers as they paste code from ChatGPT.
+* **CI/CD Integration:** A GitHub Action to block Pull Requests that introduce hallucinated packages.
+* **Malware Analysis:** Deep scanning of the package code itself, not just the name.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 👥 The Team
+Built with 💻 and ☕ for **Hack The Winter 2025**.
 
-## How can I deploy this project?
+| Team Member | Role & Key Contributions |
+| :--- | :--- |
+| **Yash Makra** | **Security Intelligence & Core Logic**<br>Designed the hallucination detection algorithm and integrated RapidFuzz for typosquatting analysis. |
+| **Arushi Dhar** | **Frontend Engineering & CLI**<br>Developed the React dashboard, created the command-line interface tool, and managed DevOps pipelines. |
+| **Manaswi Asutkar** | **UI/UX Design & Product Strategy**<br>Designed the "Red Alert" user interface, optimized the scanning workflow, and led product pitch strategy. |
+| **Ankita Gupta** | **Backend Architecture & Research**<br>Built the FastAPI microservices, implemented registry verification protocols, and authored technical documentation. |
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is submitted as part of the "The Nest" round.
