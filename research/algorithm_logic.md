@@ -10,8 +10,20 @@ AI Hallucination in code generation refers to LLMs inventing non-existent packag
 ### A. Typosquatting Detection (Levenshtein Distance)
 We utilize the **Levenshtein Distance** algorithm to measure the mathematical "edit distance" between a scanned package and legitimate libraries.
 
-* **The Formula:**
-$$lev(a, b) = \begin{cases} |a| & \text{if } |b| = 0, \\ |b| & \text{if } |a| = 0, \\ lev(tail(a), tail(b)) & \text{if } a[0] = b[0], \\ 1 + min \begin{cases} lev(tail(a), b) \\ lev(a, tail(b)) \\ lev(tail(a), tail(b)) \end{cases} & \text{otherwise.} \end{cases}$$
+* **The Formula:** The distance between two strings *a* and *b* (of length |*a*| and |*b*| respectively) is given by *lev(a, b)*:
+
+$$
+lev(a, b) = \begin{cases} 
+|a| & \text{if } |b| = 0, \\
+|b| & \text{if } |a| = 0, \\
+lev(tail(a), tail(b)) & \text{if } a[0] = b[0], \\
+1 + \min \begin{cases}
+lev(tail(a), b) \\
+lev(a, tail(b)) \\
+lev(tail(a), tail(b))
+\end{cases} & \text{otherwise.}
+\end{cases}
+$$
 
 * **Implementation:** Our backend leverages the `rapidfuzz` library, which provides C++ optimized string matching for near-instantaneous processing of large repositories.
 * **Strategic Thresholding:**
