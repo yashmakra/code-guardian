@@ -123,7 +123,7 @@ Built with 💻 and ☕ for **Hack The Winter 2025**.
 
 | Team Member | Role & Key Contributions |
 | :--- | :--- |
-| **Yash Makra** | **Security Intelligence & Core Logic**<br>Designed the hallucination detection algorithm and integrated RapidFuzz for typosquatting analysis. |
+| **Yashdeep** | **Security Intelligence & Core Logic**<br>Designed the hallucination detection algorithm and integrated RapidFuzz for typosquatting analysis. |
 | **Arushi Dhar** | **Frontend Engineering & CLI**<br>Developed the React dashboard, created the command-line interface tool, and managed DevOps pipelines. |
 | **Manaswi Asutkar** | **UI/UX Design & Product Strategy**<br>Designed the "Red Alert" user interface, optimized the scanning workflow, and led product pitch strategy. |
 | **Ankita Gupta** | **Backend Architecture & Research**<br>Built the FastAPI microservices, implemented registry verification protocols, and authored technical documentation. |
