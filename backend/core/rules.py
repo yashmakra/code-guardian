@@ -1,66 +1,43 @@
 # backend/core/rules.py
 
 def calculate_risk_score(metadata, typo_target):
-    # If package truly doesn't exist in registry
-    if metadata is None:
+    """
+    Decides the risk level based on:
+    1. Does it exist? (metadata)
+    2. Is it a typo? (typo_target)
+    """
+    
+    # 1. IF PACKAGE EXISTS -> SAFE
+    # If we found metadata, the package is real.
+    if metadata:
         return {
-            "level": "CRITICAL",
-            "score": 100,
-            "color": "red",
-            "status": "AI Hallucination",
-            "reasons": ["Package not found. This name is available for hackers to register malware."]
+            "level": "SAFE",
+            "score": 0,
+            "color": "green",
+            "status": "Verified",
+            "reasons": ["Package exists on official registry."]
         }
 
+    # 2. IF PACKAGE DOES NOT EXIST... CHECK FOR TYPO (The Innovation Layer)
+    # It's missing, but it looks like a popular package? -> Suggestion
     if typo_target:
         return {
             "level": "HIGH",
-            "score": 85,
-            "color": "red",
-            "status": "Typosquatting Risk",
-            "reasons": [f"Suspiciously similar to '{typo_target}'."]
+            "score": 90,
+            "color": "orange",
+            "status": "Typosquatting Detected",
+            "suggestion": f"Did you mean '{typo_target}'? (Confidence: High)",
+            "reasons": [
+                f"The package '{typo_target}' is very popular.",
+                "This input looks like a typo-squatting attack or mistake."
+            ]
         }
 
+    # 3. IF MISSING AND NO TYPO -> HALLUCINATION
     return {
-        "level": "SAFE",
-        "score": 0,
-        "color": "green",
-        "status": "Verified",
-        "reasons": ["Package is verified on the registry."]
+        "level": "CRITICAL",
+        "score": 100,
+        "color": "red",
+        "status": "AI Hallucination",
+        "reasons": ["Package not found. This name is available for hackers to register malware."]
     }
-
-
-
-# # backend/core/rules.py
-
-# def calculate_risk_score(metadata, typo_target):
-#     """
-#     Assigns a color and score based on findings.
-#     """
-#     # 1. HALLUCINATION CHECK
-#     if metadata is None:
-#         return {
-#             "level": "CRITICAL",
-#             "score": 100,
-#             "color": "red",
-#             "status": "AI Hallucination",
-#             "reasons": ["Package does not exist in the official registry."]
-#         }
-
-#     # 2. TYPOSQUATTING CHECK
-#     if typo_target:
-#         return {
-#             "level": "HIGH",
-#             "score": 85,
-#             "color": "red",
-#             "status": "Typosquatting Risk",
-#             "reasons": [f"This package mimics the popular library '{typo_target}'."]
-#         }
-
-#     # 3. VERIFIED/SAFE
-#     return {
-#         "level": "SAFE",
-#         "score": 0,
-#         "color": "green",
-#         "status": "Verified",
-#         "reasons": ["Package exists and is not a known typo."]
-#     }

@@ -1,0 +1,21 @@
+name: Sentinel Security Scan
+
+# This creates the "Enterprise" feel - showing it runs automatically
+on: [pull_request]
+
+jobs:
+  sentinel-check:
+    name: AI Dependency Auditor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Run Sentinel Hallucination Check
+        uses: sentinel-team/action@v1
+        with:
+          threshold: "strict"
+          
+      - name: Report Findings
+        if: failure()
+        run: echo "🚨 Sentinel blocked a suspicious hallucinated package!"
