@@ -51,15 +51,111 @@ graph TD
     E -->|Ratio >= 85%| G[🟠 HIGH RISK: Typosquatting]
     E -->|Ratio < 85%| H[🟢 SAFE: Unique Package]
 ```
+---
 
+## 🏗️ Architecture & Data Flow (Mandatory DFD)
+
+### Level 1 Data Flow Diagram
+This diagram illustrates how user input travels through our FastAPI gateway, processed by the Intelligence Engine, and validated against external databases.
+
+```mermaid
+flowchart LR
+    User[Dev/CI Pipeline] -->|1. Submit Package List| API[FastAPI Gateway]
+    API -->|2. Parse Dependencies| Parser[Dependency Parser]
+    
+    subgraph Intelligence_Engine
+    Parser -->|3. Analyze| Intel[Risk Scorer]
+    Intel -->|4. Fuzzy Match| DB[(Safe Package DB)]
+    end
+    
+    Intel -->|5. Risk Score + Suggestions| JSON[Result Builder]
+    JSON -->|6. Security Report| Dashboard[Frontend/CLI]
+```
   ---
+### Logical Database Schema
+Even though we utilize a high-speed Redis cache, our logical data structure ensures consistent reporting.
 
+```mermaid
+erDiagram
+    PACKAGE {
+        string name "e.g. pands"
+        int risk_score "90"
+        string suggestion "pandas"
+    }
+    SCAN_JOB {
+        string id
+        datetime timestamp
+        string status
+    }
+    SCAN_JOB ||--|{ PACKAGE : detects
+```
+---
+### **2. For the "CI/CD Integration" (The YAML Code)**
+This is just a standard code block. You use `yaml` to get the colorful syntax highlighting.
+
+## 🔌 CI/CD Integration (Impact)
+Sentinel is designed for enterprise workflows. We provide a **GitHub Action** that runs automatically on every Pull Request to block malicious dependencies before they merge.
+
+**Workflow Configuration** (`.github/workflows/sentinel_demo.yml`):
+
+```yaml
+name: Sentinel Security Scan
+on: [pull_request]
+jobs:
+  sentinel-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Sentinel AI Scan
+        uses: sentinel-team/action@v1
+        with:
+          threshold: "strict"
+```
 ## 🚀 Key Features
 
 * **✅ Cross-Ecosystem Support:** Seamlessly checks both Python (PyPI) and Node.js (NPM) ecosystems.
 * **⚡ Real-Time Scanning:** Scans an entire GitHub repository in seconds.
 * **🛡️ "Red Alert" UI:** Instantly visualizes Critical vs. Safe dependencies.
 * **🧠 Context-Aware Parsing:** Ignores built-in modules (like `os`, `sys`, `fs`) to reduce false positives.
+
+---
+
+### **3. Scalability & Reliability (Diagram + Text)**
+## 📊 Scalability & Reliability
+
+### High-Level System Diagram
+This diagram outlines how our frontend, backend, and external services interact to ensure low latency and high availability.
+
+```mermaid
+graph TD
+    User["User / Client"] -->|HTTPS Request| LB["Load Balancer (Nginx)"]
+    LB -->|Distributes Traffic| API["FastAPI Server Cluster"]
+
+    subgraph Internal_Infrastructure
+    API -->|Read/Write| Cache[("Redis Cache")]
+    API -->|Queue Jobs| Worker["Async Workers (Celery)"]
+    end
+
+    subgraph External_World
+    Worker -->|Verify Package| PYPI[PyPI API]
+    Worker -->|Verify Package| NPM[NPM API]
+    end
+
+    Worker -->|Return Analysis| API
+    API -->|JSON Report| User
+```
+
+---
+
+### 2. Handling Growth (Scalability)
+* **Redis Caching Layer:** To handle more users, we will cache API responses from PyPI/NPM for 24 hours. If 1,000 users scan "react", we only hit the external API *once*, serving the other 999 requests instantly from cache.
+* **Asynchronous Processing:** Scanning large repositories (100+ files) can be slow. We will offload deep scanning to **Celery Workers** so the user's interface never freezes.
+* **Horizontal Scaling:** Since our backend is stateless (FastAPI), we can easily spin up multiple instances behind a Load Balancer (Nginx) to handle traffic spikes.
+
+### 3. Avoiding Failures (Reliability)
+* **Rate Limit Handling:** If PyPI blocks us for too many requests, our system implements **Exponential Backoff** (retrying after 1s, 2s, 4s) rather than crashing.
+* **Fallback Logic:** If the external registry APIs go down, Sentinel will fall back to its internal "Safe List" database to ensure basic security checks can still continue.
+* **Containerization:** The entire system is Dockerized (see `docker-compose.yml`), ensuring it runs identically on any server, preventing "it works on my machine" crashes.
 
 ---
 
@@ -75,7 +171,7 @@ Follow these steps to run Sentinel locally for testing.
 ### 1. Clone the Repository
 
 ```Bash
-git clone https://github.com/manaswi1710/sentinel.git
+git clone https://github.com/yashmakra/code-guardian.git
 cd code-guardian
 ```
 ### 2. Setup Backend (FastAPI)
@@ -109,6 +205,8 @@ npm run dev
 
 Visit http://localhost:8080 to access the dashboard.
 
+---
+
 ## 📊 Research & Methodology
 We believe that security tools must be transparent. Our detection logic is based on the research by **Bar Lanyado** regarding "AI Package Hallucinations" and the rise of software supply chain attacks.
 
@@ -121,37 +219,6 @@ We believe that security tools must be transparent. Our detection logic is based
 * **CI/CD Integration:** A GitHub Action to block Pull Requests that introduce hallucinated packages.
 * **Malware Analysis:** Deep scanning of the package code itself, not just the name.
 
----
-### 1. High-Level System Diagram
-This diagram outlines how our frontend, backend, and external services interact to ensure low latency and high availability.
-
-```mermaid
-graph TD
-    User["User / Client"] -->|HTTPS Request| LB["Load Balancer (Nginx)"]
-    LB -->|Distributes Traffic| API["FastAPI Server Cluster"]
-
-    subgraph Internal_Infrastructure
-    API -->|Read/Write| Cache[("Redis Cache")]
-    API -->|Queue Jobs| Worker["Async Workers (Celery)"]
-    end
-
-    subgraph External_World
-    Worker -->|Verify Package| PYPI[PyPI API]
-    Worker -->|Verify Package| NPM[NPM API]
-    end
-
-    Worker -->|Return Analysis| API
-    API -->|JSON Report| User
-```
-### 2. Handling Growth (Scalability)
-* **Redis Caching Layer:** To handle more users, we will cache API responses from PyPI/NPM for 24 hours. If 1,000 users scan "react", we only hit the external API *once*, serving the other 999 requests instantly from cache.
-* **Asynchronous Processing:** Scanning large repositories (100+ files) can be slow. We will offload deep scanning to **Celery Workers** so the user's interface never freezes.
-* **Horizontal Scaling:** Since our backend is stateless (FastAPI), we can easily spin up multiple instances behind a Load Balancer (Nginx) to handle traffic spikes.
-
-### 3. Avoiding Failures (Reliability)
-* **Rate Limit Handling:** If PyPI blocks us for too many requests, our system implements **Exponential Backoff** (retrying after 1s, 2s, 4s) rather than crashing.
-* **Fallback Logic:** If the external registry APIs go down, Sentinel will fall back to its internal "Safe List" database to ensure basic security checks can still continue.
-* **Containerization:** The entire system is Dockerized (see `docker-compose.yml`), ensuring it runs identically on any server, preventing "it works on my machine" crashes.
 ---
 
 ## 👥 The Team
