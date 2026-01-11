@@ -41,4 +41,3 @@ To ensure high **Efficiency of Approach**, we implemented a static **Context-Awa
 * **Internal Dependency Handling:** The system is designed to ignore relative imports (e.g., `from .module import X`), ensuring the scan focuses solely on external supply chain risks.
 
 ---
-*Developed for Round 1: The Nest - Hack The Winter 2025*
