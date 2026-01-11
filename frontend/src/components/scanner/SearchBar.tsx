@@ -9,7 +9,6 @@ interface SearchBarProps {
   onScanPackage: (name: string, ecosystem: string) => void;
   loading: boolean;
 }
-
 type ScanMode = 'readme' | 'package';
 
 export function SearchBar({ onScanReadme, onScanPackage, loading }: SearchBarProps) {
